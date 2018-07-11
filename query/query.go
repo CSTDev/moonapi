@@ -342,7 +342,7 @@ func ToConfiguration(config string) (*Configuration, error) {
 // errors if the string passed is not valid
 func ToHoldSet(holdSet string) (*HoldSet, error) {
 	var holdSetType HoldSet
-	switch holdSet {
+	switch strings.ToLower(holdSet) {
 	case "os":
 		holdSetType = OS
 	case "wood":
@@ -384,7 +384,7 @@ func ToGrade(grade string) (*Grade, error) {
 		return nil, errors.New("String passed to ToGrade was not a valid Grade")
 	}
 	var gradeType Grade
-	switch grade {
+	switch strings.ToUpper(grade) {
 	case "5+":
 		gradeType = FivePlus
 	case "6A":
