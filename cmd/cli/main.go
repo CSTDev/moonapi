@@ -5,11 +5,9 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"strconv"
-	"strings"
 
 	. "github.com/cstdev/moonapi"
-	"github.com/cstdev/moonapi/query"
+	"github.com/cstdev/moonapi/utils"
 )
 
 var filePath = "./request.token"
@@ -60,7 +58,7 @@ func main() {
 	var password = flag.String("pass", "", "Enter a password to log in with.")
 
 	var order = flag.String("o", "", "Order to sort problems by: New, Grade, Rating, Repeats.")
-	var desc = flag.Bool("d", true, "Sort by descending.")
+	var desc = flag.String("d", "true", "Sort by descending.")
 	var configuration = flag.String("c", "", "Board configuration: Forty, Twenty")
 	var holdSet = flag.String("hs", "", "Hold Set types to include split by comma: OS, Wood, A, B, C. (default all)")
 	var filter = flag.String("f", "", "Filter to apply to problems: Benchmarks, Setbyme, Myascents")
@@ -77,64 +75,21 @@ func main() {
 		moonBoardSession = reuseSession()
 	}
 
-	builder := query.New()
-
-	if *order != "" {
-		orderType, err := query.ToOrder(*order)
-		check(err)
-		builder.Sort(*orderType, *desc)
+	reqQuery := &utils.RequestQuery{
+		Order:         *order,
+		Asc:           *desc,
+		Configuration: *configuration,
+		HoldSet:       *holdSet,
+		Filter:        *filter,
+		MinGrade:      *minGrade,
+		MaxGrade:      *maxGrade,
+		Page:          *page,
+		PageSize:      *pageSize,
 	}
 
-	if *configuration != "" {
-		configType, err := query.ToConfiguration(*configuration)
-		check(err)
+	query, err := reqQuery.Query()
+	check(err)
 
-		builder.Configuration(*configType)
-	}
-
-	if *holdSet != "" {
-		sets := strings.Split(*holdSet, ",")
-		for _, set := range sets {
-			holdType, err := query.ToHoldSet(set)
-			check(err)
-			builder.HoldSet(*holdType)
-			fmt.Printf("Added hold set: %s", set)
-		}
-	}
-
-	if *filter != "" {
-		filterType, err := query.ToFilter(*filter)
-		check(err)
-		builder.Filter(*filterType)
-	}
-
-	if *minGrade != "" {
-		minGradeType, err := query.ToGrade(*minGrade)
-		check(err)
-
-		builder.MinGrade(*minGradeType)
-	}
-
-	if *maxGrade != "" {
-		maxGradeType, err := query.ToGrade(*maxGrade)
-		check(err)
-
-		builder.MaxGrade(*maxGradeType)
-	}
-
-	if *page != "" {
-		intPage, err := strconv.Atoi(*page)
-		check(err)
-		builder.Page(intPage)
-	}
-
-	if *pageSize != "" {
-		intPageSize, err := strconv.Atoi(*pageSize)
-		check(err)
-		builder.PageSize(intPageSize)
-	}
-
-	query, _ := builder.Build()
 	fmt.Printf("%+v\n", query)
 
 	problems, err := moonBoardSession.GetProblems(query)

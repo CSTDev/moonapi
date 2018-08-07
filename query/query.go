@@ -83,6 +83,7 @@ type Query interface {
 }
 
 type query struct {
+	term     string
 	sort     string
 	filter   string
 	page     int
@@ -107,6 +108,7 @@ func (q *query) PageSize() int {
 
 // QueryBuilder assists with the building of a Query
 type QueryBuilder interface {
+	Term(searchTerm string) QueryBuilder
 	Sort(order Order, asc bool) QueryBuilder
 	Configuration(filter Configuration) QueryBuilder
 	HoldSet(filter HoldSet) QueryBuilder
@@ -119,6 +121,7 @@ type QueryBuilder interface {
 }
 
 type queryBuilder struct {
+	term          string
 	order         string
 	configuration string
 	holdSet       string
@@ -142,13 +145,21 @@ func New() QueryBuilder {
 	return &qb
 }
 
+// Term adds a search term to the query, usually the name of
+// the problem being searched for.
+// Default: empty string
+func (qb *queryBuilder) Term(searchTerm string) QueryBuilder {
+	qb.term = "Name~contains~'" + searchTerm + "'"
+	return qb
+}
+
 // Sort sets the sort order that will be used in the query.
 // Only one sort order can be provided, if more than one is then
 // an error is added to be returned and the last provided Order is used.
 // Default: is Newest problems first
 func (qb *queryBuilder) Sort(order Order, asc bool) QueryBuilder {
 	if qb.order != "" {
-		qb.error = append(qb.error, errors.New("Can only sort by one parameter, defaulting to the last provided."))
+		qb.error = append(qb.error, errors.New("can only sort by one parameter, defaulting to the last provided"))
 	}
 
 	switch order {
@@ -240,7 +251,7 @@ func (qb *queryBuilder) MaxGrade(max Grade) QueryBuilder {
 // Page specifies which page of results to return
 func (qb *queryBuilder) Page(page int) QueryBuilder {
 	if page < 1 {
-		qb.error = append(qb.error, errors.New("Page number cannot be below 1."))
+		qb.error = append(qb.error, errors.New("page number cannot be below 1"))
 	} else {
 		qb.page = page
 	}
@@ -264,12 +275,13 @@ func (qb *queryBuilder) PageSize(pageSize int) QueryBuilder {
 func (qb *queryBuilder) Build() (Query, []error) {
 
 	if qb.minGrade > qb.maxGrade {
-		qb.error = append(qb.error, errors.New("Min grade cannot be higher than max grade."))
+		qb.error = append(qb.error, errors.New("min grade cannot be higher than max grade"))
 	}
 
 	var buffer bytes.Buffer
 	buffer.WriteString(qb.configuration)
 
+	addAnd(&buffer, qb.term)
 	addAnd(&buffer, qb.holdSet)
 	addAnd(&buffer, qb.filter)
 	addAnd(&buffer, strings.Replace("MinGrade~eq~'5+'", "5+", gradeStrings[qb.minGrade], -1))
@@ -307,14 +319,14 @@ func isValidGrade(grade string) bool {
 // errors if the string passed is not valid
 func ToOrder(order string) (*Order, error) {
 	var orderType Order
-	switch order {
-	case "New":
+	switch strings.ToLower(order) {
+	case "new":
 		orderType = Newest
-	case "Grade":
+	case "grade":
 		orderType = Difficulty
-	case "Rating":
+	case "rating":
 		orderType = Rating
-	case "Repeats":
+	case "repeats":
 		orderType = Repeats
 	default:
 		return nil, errors.New("String passed to ToOrder was not a valid order value")
@@ -327,10 +339,10 @@ func ToOrder(order string) (*Order, error) {
 func ToConfiguration(config string) (*Configuration, error) {
 
 	var configType Configuration
-	switch config {
-	case "Forty":
+	switch strings.ToLower(config) {
+	case "forty":
 		configType = Forty
-	case "Twenty":
+	case "twenty":
 		configType = Twenty
 	default:
 		return nil, errors.New("String passed to ToConfiguration was not a valid configuration")
@@ -342,7 +354,7 @@ func ToConfiguration(config string) (*Configuration, error) {
 // errors if the string passed is not valid
 func ToHoldSet(holdSet string) (*HoldSet, error) {
 	var holdSetType HoldSet
-	switch holdSet {
+	switch strings.ToLower(holdSet) {
 	case "os":
 		holdSetType = OS
 	case "wood":
@@ -363,12 +375,12 @@ func ToHoldSet(holdSet string) (*HoldSet, error) {
 // errors if the string passed is not valid
 func ToFilter(filter string) (*Filter, error) {
 	var filterType Filter
-	switch filter {
-	case "Benchmarks":
+	switch strings.ToLower(filter) {
+	case "benchmarks":
 		filterType = Benchmarks
-	case "Setbyme":
+	case "setbyme":
 		filterType = SetByMe
-	case "Myascents":
+	case "myascents":
 		filterType = MyAscents
 	default:
 		return nil, errors.New("String passed to ToFilter was not a valid Filter")
@@ -384,7 +396,7 @@ func ToGrade(grade string) (*Grade, error) {
 		return nil, errors.New("String passed to ToGrade was not a valid Grade")
 	}
 	var gradeType Grade
-	switch grade {
+	switch strings.ToUpper(grade) {
 	case "5+":
 		gradeType = FivePlus
 	case "6A":
