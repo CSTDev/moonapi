@@ -90,7 +90,7 @@ func TestBuilderOnlyOneSort(t *testing.T) {
 		t.FailNow()
 	}
 
-	expectedError := "Can only sort by one parameter, defaulting to the last provided."
+	expectedError := "can only sort by one parameter, defaulting to the last provided"
 	if err[0].Error() != expectedError {
 		t.Errorf("Incorrect error provided. Got: %s Expected: %s", err[0].Error(), expectedError)
 	}
@@ -192,6 +192,15 @@ func TestBuilderHoldSetAndConfiguration(t *testing.T) {
 	}
 }
 
+func TestBuilderFilterSearchTerm(t *testing.T) {
+	expected := "Name~contains~'a climb'~and~MinGrade~eq~'5+'~and~MaxGrade~eq~'8B+'"
+	builder := New()
+	query, _ := builder.Term("a climb").Build()
+	if query.Filter() != expected {
+		t.Errorf("Query Filter was incorrect, got %s, want: %s", query.Filter(), expected)
+	}
+}
+
 func TestBuilderFilterMyAscents(t *testing.T) {
 	expected := "Myascents~eq~''~and~MinGrade~eq~'5+'~and~MaxGrade~eq~'8B+'"
 	builder := New()
@@ -238,7 +247,7 @@ func TestBuilderGradeMax(t *testing.T) {
 }
 
 func TestBuilderMaxGradeLowerThanMinErrors(t *testing.T) {
-	expectedError := "Min grade cannot be higher than max grade."
+	expectedError := "min grade cannot be higher than max grade"
 	builder := New()
 
 	_, err := builder.MinGrade(EightA).MaxGrade(SixC).Build()
@@ -254,9 +263,9 @@ func TestBuilderMaxGradeLowerThanMinErrors(t *testing.T) {
 }
 
 func TestBuilderFilterMultiple(t *testing.T) {
-	expected := "Myascents~eq~''~and~Benchmarks~eq~''~and~MinGrade~eq~'5+'~and~MaxGrade~eq~'8B+'"
+	expected := "Name~contains~'a climb'~and~Myascents~eq~''~and~Benchmarks~eq~''~and~MinGrade~eq~'5+'~and~MaxGrade~eq~'8B+'"
 	builder := New()
-	query, _ := builder.Filter(MyAscents).Filter(Benchmarks).Build()
+	query, _ := builder.Term("a climb").Filter(MyAscents).Filter(Benchmarks).Build()
 	if query.Filter() != expected {
 		t.Errorf("Query Filter was incorrect, got %s, want: %s", query.Filter(), expected)
 	}
@@ -278,7 +287,7 @@ func TestAddPageNumber(t *testing.T) {
 }
 
 func TestBadPageNumber(t *testing.T) {
-	expectedError := "Page number cannot be below 1."
+	expectedError := "page number cannot be below 1"
 	builder := New()
 
 	query, err := builder.MinGrade(SevenA).Page(0).Build()

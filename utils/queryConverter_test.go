@@ -155,3 +155,18 @@ func TestPageSizeIsAddedToQuery(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestSearchTermIsAddedToQuery(t *testing.T) {
+	req := &RequestQuery{
+		Term: "a climb",
+	}
+
+	query, err := req.Query()
+	checkError(t, err)
+
+	expected := "Name~contains~'a climb'~and~MinGrade~eq~'5+'~and~MaxGrade~eq~'8B+'"
+	if query.Filter() != expected {
+		t.Errorf("Expected:\n %s \n Recieved: \n %s", expected, query.Filter())
+		t.FailNow()
+	}
+}

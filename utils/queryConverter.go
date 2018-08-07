@@ -12,6 +12,7 @@ import (
 // RequestQuery represents all the fields available in a query but as
 // strings.
 type RequestQuery struct {
+	Term          string
 	Order         string
 	Asc           string
 	Configuration string
@@ -53,6 +54,11 @@ func (q *RequestQuery) Query() (query.Query, error) {
 	}
 
 	builder := query.New()
+
+	if q.Term != "" {
+		builder.Term(q.Term)
+	}
+
 	if q.Order != "" {
 		orderType, err := query.ToOrder(q.Order)
 		if err != nil {
