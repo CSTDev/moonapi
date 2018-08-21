@@ -43,9 +43,9 @@ func reuseSession() MoonBoard {
 
 	err = json.Unmarshal([]byte(tokens), &testAuth)
 	check(err)
-	var moonBoardSession = MoonBoard{
-		Auth: testAuth,
-	}
+	var moonBoardSession = MoonBoard{}
+	moonBoardSession.SetAuth(testAuth)
+
 	fmt.Printf("%+v\n", moonBoardSession)
 	return moonBoardSession
 }
