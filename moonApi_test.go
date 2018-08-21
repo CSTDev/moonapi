@@ -141,7 +141,7 @@ func TestErrorOnSessionWrongAuthTokens(t *testing.T) {
 	testAuth = append(testAuth, AuthToken{Name: "__Token", Value: "RequestToken"})
 	testAuth = append(testAuth, *testReqCookie)
 	var session = MoonBoard{
-		Auth: testAuth,
+		auth: testAuth,
 	}
 
 	builder := query.New()
@@ -192,7 +192,7 @@ func TestErrorOnSessionExpired(t *testing.T) {
 	testAuth = append(testAuth, *testMoonCookie)
 	testAuth = append(testAuth, *testReqCookie)
 	var session = MoonBoard{
-		Auth: testAuth,
+		auth: testAuth,
 	}
 
 	builder := query.New()
@@ -221,7 +221,7 @@ func TestValidGetProbelmsQueryReturnsProblems(t *testing.T) {
 	testAuth = append(testAuth, *testMoonCookie)
 	testAuth = append(testAuth, *testReqCookie)
 	var session = MoonBoard{
-		Auth: testAuth,
+		auth: testAuth,
 	}
 
 	builder := query.New()
@@ -282,7 +282,7 @@ func TestQueryParametersArePassedToEnpoint(t *testing.T) {
 	testAuth = append(testAuth, *testMoonCookie)
 	testAuth = append(testAuth, *testReqCookie)
 	var session = MoonBoard{
-		Auth: testAuth,
+		auth: testAuth,
 	}
 
 	builder := query.New()
@@ -303,7 +303,7 @@ func TestNonTwoHundredResponseReturnsError(t *testing.T) {
 	testAuth = append(testAuth, *testMoonCookie)
 	testAuth = append(testAuth, *testReqCookie)
 	var session = MoonBoard{
-		Auth: testAuth,
+		auth: testAuth,
 	}
 
 	builder := query.New()

@@ -27,11 +27,13 @@ type AuthToken struct {
 type MoonBoardApi interface {
 	Login(username string, password string) error
 	GetProblems(query Query) (MbResponse, error)
+	Auth() []AuthToken
+	SetAuth(authTokens []AuthToken)
 }
 
 // MoonBoard contains all the AuthTokens (cookies) required
 type MoonBoard struct {
-	Auth []AuthToken
+	auth []AuthToken
 }
 
 const baseUrl string = "https://moonboard.com/"
@@ -41,7 +43,7 @@ const getProblemsUrl = "Problems/GetProblems"
 // Login takes a username and password, then attempts to use these to
 // enter into the website's login form and submit it, storing the resulting
 // cookies as AuthTokens
-func (m *MoonBoard) Login(username string, password string) error {
+func (m MoonBoard) Login(username string, password string) error {
 	fmt.Printf("Hi %s\n", username)
 	bow := surf.NewBrowser()
 	err := bow.Open(baseUrl + loginUrl)
@@ -83,7 +85,7 @@ func (m *MoonBoard) Login(username string, password string) error {
 		return errors.New("failed to log-in, moonboard cookie not returned")
 	}
 
-	m.Auth = response
+	m.auth = response
 
 	return nil
 
@@ -101,7 +103,7 @@ func tokenToCookie(token AuthToken) *http.Cookie {
 // It requires the session to provide the
 // _MoonBoard and __RequestVerificationToken AuthToken
 // errors are retuned if these are missing or the session has expired.
-func (m *MoonBoard) GetProblems(query Query) (MbResponse, error) {
+func (m MoonBoard) GetProblems(query Query) (MbResponse, error) {
 	v := url.Values{}
 	v.Set("page", strconv.Itoa(query.Page()))
 	v.Add("pageSize", strconv.Itoa(query.PageSize()))
@@ -114,12 +116,12 @@ func (m *MoonBoard) GetProblems(query Query) (MbResponse, error) {
 	jar, _ := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
 	var cookies []*http.Cookie
 
-	if len(m.Auth) == 0 {
+	if len(m.auth) == 0 {
 		return res, errors.New("Required _Moonboard or __RequestVerificationToken Auth Tokens missing")
 	}
 
 	containsAuth := false
-	for _, token := range m.Auth {
+	for _, token := range m.auth {
 		if token.Name == "_MoonBoard" {
 			containsAuth = true
 			break
@@ -130,8 +132,8 @@ func (m *MoonBoard) GetProblems(query Query) (MbResponse, error) {
 		return res, errors.New("Required _Moonboard or __RequestVerificationToken Auth Tokens missing")
 	}
 
-	cookies = append(cookies, tokenToCookie(m.Auth[0]))
-	cookies = append(cookies, tokenToCookie(m.Auth[1]))
+	cookies = append(cookies, tokenToCookie(m.auth[0]))
+	cookies = append(cookies, tokenToCookie(m.auth[1]))
 	u, _ := url.Parse(baseUrl)
 	jar.SetCookies(u, cookies)
 	bow := surf.NewBrowser()
@@ -163,6 +165,14 @@ func (m *MoonBoard) GetProblems(query Query) (MbResponse, error) {
 
 	return res, nil
 
+}
+
+func (m MoonBoard) Auth() []AuthToken {
+	return m.auth
+}
+
+func (m MoonBoard) SetAuth(authTokens []AuthToken) {
+	m.auth = authTokens
 }
 
 // ProblemsAsJSON takes an array of Problem and returns
