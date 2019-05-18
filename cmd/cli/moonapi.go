@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	. "github.com/cstdev/moonapi"
+	"github.com/cstdev/moonapi"
 	"github.com/cstdev/moonapi/utils"
 )
 
@@ -18,8 +18,8 @@ func check(e error) {
 	}
 }
 
-func login(username string, password string) MoonBoard {
-	var moonBoardSession = MoonBoard{}
+func login(username string, password string) moonapi.MoonBoard {
+	var moonBoardSession = moonapi.MoonBoard{}
 
 	fmt.Printf("Hello %s \n", username)
 	err := moonBoardSession.Login(username, password)
@@ -35,15 +35,15 @@ func login(username string, password string) MoonBoard {
 	return moonBoardSession
 }
 
-func reuseSession() MoonBoard {
+func reuseSession() moonapi.MoonBoard {
 	// For testing so I don't actually log in each time.
 	tokens, err := ioutil.ReadFile(filePath)
 
-	var testAuth []AuthToken
+	var testAuth []moonapi.AuthToken
 
 	err = json.Unmarshal([]byte(tokens), &testAuth)
 	check(err)
-	var moonBoardSession = MoonBoard{}
+	var moonBoardSession = moonapi.MoonBoard{}
 	moonBoardSession.SetAuth(testAuth)
 
 	fmt.Printf("%+v\n", moonBoardSession)
@@ -51,7 +51,7 @@ func reuseSession() MoonBoard {
 }
 
 func main() {
-	var moonBoardSession = MoonBoard{}
+	var moonBoardSession = moonapi.MoonBoard{}
 
 	var shouldLogin = flag.Bool("login", false, "Whether to log in or use cached credentials.")
 	var username = flag.String("user", "", "Enter a username to log in with.")
@@ -96,6 +96,6 @@ func main() {
 	check(err)
 
 	fmt.Printf("\n\n Number of Problems: %d\n\n", problems.Total)
-	fmt.Println(ProblemsAsJSON(problems.Data))
+	fmt.Println(moonapi.ProblemsAsJSON(problems.Data))
 
 }
