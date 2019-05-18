@@ -3,7 +3,7 @@ GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test
 
 build:
-	GO111MODULE=on $(GOBUILD) -v ./cmd/cli/main.go
+	GO111MODULE=on $(GOBUILD) -v ./cmd/cli/moonapi.go
 
 test:
 	GO111MODULE=on $(GOTEST) -v ./...
