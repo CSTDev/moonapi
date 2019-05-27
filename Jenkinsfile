@@ -1,20 +1,18 @@
 pipeline {
-    agent { 
-            label 'golang-builder' 
-        }
+    agent any
 
     stages {
         stage('Build') {
             steps {
                 echo 'Building..'
-                make build
+                sh "make build"
             }
         }
         stage('Test') {
             container('golang') {
                 steps {
                     echo 'Testing..'
-                    GO111MODULE=on; go test ./...
+                    sh "GO111MODULE=on; go test ./..."
                 }
             }
         }
