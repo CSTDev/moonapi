@@ -5,14 +5,12 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh "make build"
             }
         }
         stage('Test') {
             container('golang') {
                 steps {
                     echo 'Testing..'
-                    sh "GO111MODULE=on; go test ./..."
                 }
             }
         }
