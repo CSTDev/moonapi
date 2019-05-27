@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	. "github.com/cstdev/moonapi/query"
-	"github.com/golang/glog"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/publicsuffix"
 	"gopkg.in/headzoo/surf.v1"
 )
@@ -48,13 +48,13 @@ func (m MoonBoard) Login(username string, password string) error {
 	bow := surf.NewBrowser()
 	err := bow.Open(baseUrl + loginUrl)
 	if err != nil {
-		glog.Info("Unable to open Login Page.")
+		log.Info("Unable to open Login Page.")
 		return err
 	}
 
 	fm, err := bow.Form("#frmLogin")
 	if err != nil {
-		glog.Info("Unable to find Login form.")
+		log.Info("Unable to find Login form.")
 		return err
 	}
 
@@ -63,13 +63,17 @@ func (m MoonBoard) Login(username string, password string) error {
 	fm.Input("Login.RememberMe", "false")
 
 	if fm.Submit() != nil {
-		glog.Info("Failed to submit log-in")
+		log.Info("Failed to submit log-in")
 		return errors.New("Failed to submit log-in")
 	}
 
 	var response []AuthToken
 	var successResponse = false
 	for _, cookie := range bow.SiteCookies() {
+		log.WithFields(log.Fields{
+			"name":  cookie.Name,
+			"value": cookie.Value,
+		}).Debug("Successful Response")
 		token := AuthToken{
 			Name:  cookie.Name,
 			Value: cookie.Value,
@@ -86,6 +90,10 @@ func (m MoonBoard) Login(username string, password string) error {
 	}
 
 	m.auth = response
+
+	log.WithFields(log.Fields{
+		"m": m,
+	}).Debug("Logged in")
 
 	return nil
 

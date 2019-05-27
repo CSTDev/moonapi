@@ -2,3 +2,4 @@
 *.exe
 *.token
 *.sh
+**/downloadAll.go
