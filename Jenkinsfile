@@ -8,9 +8,10 @@ pipeline {
             }
         }
         stage('Test') {
-            container('golang') {
-                steps {
+            steps {
+                container('golang') {
                     echo 'Testing..'
+                    sh "make test"
                 }
             }
         }
